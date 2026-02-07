@@ -1,7 +1,18 @@
 import mongoose from "mongoose";
-import cloudinary from "../lib/cloudinary.js"; // adjust path if needed
+import cloudinary from "../lib/cloudinary.js";
 import User from "../models/auth.model.js";
 import Message from "../models/message.model.js";
+
+const emitMessageToUser = (io, onlineUsers, userId, eventName, payload) => {
+    const socketIds = onlineUsers?.get(userId?.toString());
+    if (!socketIds) {
+        return;
+    }
+
+    for (const socketId of socketIds) {
+        io.to(socketId).emit(eventName, payload);
+    }
+};
 
 // 📨 Get messages between logged-in user and another user
 export const getMessages = async (req, res) => {
@@ -67,9 +78,14 @@ export const sendMessage = async (req, res) => {
         const { text, image } = req.body;
         const { id: receiverId } = req.params;
         const senderId = req.user._id;
+        const trimmedText = typeof text === "string" ? text.trim() : "";
 
         if (!mongoose.Types.ObjectId.isValid(receiverId)) {
             return res.status(400).json({ message: "Invalid receiver ID" });
+        }
+
+        if (!trimmedText && !image) {
+            return res.status(400).json({ message: "Message text or image is required" });
         }
 
         let imageUrl;
@@ -81,12 +97,20 @@ export const sendMessage = async (req, res) => {
         const newMessage = new Message({
             senderId,
             receiverId,
-            text,
-            image: imageUrl
+            text: trimmedText,
+            image: imageUrl || ""
         });
 
         await newMessage.save();
-        res.status(201).json(newMessage);
+        const messagePayload = newMessage.toObject();
+        messagePayload.senderId = messagePayload.senderId.toString();
+        messagePayload.receiverId = messagePayload.receiverId.toString();
+
+        const io = req.app.get("io");
+        const onlineUsers = req.app.get("onlineUsers");
+        emitMessageToUser(io, onlineUsers, receiverId, "newMessage", messagePayload);
+
+        res.status(201).json(messagePayload);
     } catch (error) {
         console.error("Error sending message:", error);
         res.status(500).json({ message: "Internal server error" });

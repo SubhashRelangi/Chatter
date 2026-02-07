@@ -36,20 +36,17 @@ export const useAuthStore = create((set) => ({
     try {
       const res = await axiosInstance.post('/auth/signup', userData);
       if (res.status === 201) {
-        setTimeout(() => {
-          set({ authUser: res.data.user });
-          toast.success('Signup completed!', { id: toastId });
-        }, 2000);
-      } else {
-        toast.error('Signup failed', { id: toastId });
+        set({ authUser: res.data });
+        toast.success('Signup completed!', { id: toastId });
+        return;
       }
+
+      toast.error('Signup failed', { id: toastId });
     } catch (error) {
-      toast.error('Server error', { id: toastId });
+      toast.error(error.response?.data?.message || 'Server error', { id: toastId });
       console.error('Signup error:', error);
     } finally {
-      setTimeout(() => {
-        set({ isSigningUp: false });
-      }, 2000);
+      set({ isSigningUp: false });
     }
   },
 
@@ -96,10 +93,8 @@ export const useAuthStore = create((set) => ({
       return;
     }
 
-    setTimeout(() => {
-      set({ authUser: null });
-      toast.success('Logout completed!', { id: toastId });
-    }, 2000);
+    set({ authUser: null, onlineUsers: [] });
+    toast.success('Logout completed!', { id: toastId });
   },
 
   resetAuthState: () =>

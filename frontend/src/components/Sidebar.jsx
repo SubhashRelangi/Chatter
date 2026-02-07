@@ -48,7 +48,7 @@ const Sidebar = () => {
                 />
                 <span className="text-sm">Show online only</span>
               </label>
-              <span className="text-xs text-base-content/70">({onlineUsers.length - 1} online)</span>
+              <span className="text-xs text-base-content/70">({Math.max(onlineUsers.length - 1, 0)} online)</span>
             </div>
           </div>
 
@@ -69,8 +69,8 @@ const Sidebar = () => {
                 <div className="relative avatar">
                     <div className="w-12 rounded-full">
                         <img
-                            src={user.profilePic || "/avatar.png"}
-                            alt={user.name}
+                            src={user.profilePic || "/profile.jpg"}
+                            alt={user.username}
                         />
                     </div>
                   {onlineUsers.includes(user._id) && (
