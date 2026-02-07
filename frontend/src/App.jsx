@@ -14,7 +14,7 @@ import { ProfilePage } from './pages/ProfilePage.jsx';
 import { useAuthStore } from './store/useAuthStore.js';
 
 const App = () => {
-  const { authUser, checkAuth, isCheckingAuth, setSocket } = useAuthStore();
+  const { authUser, checkAuth, isCheckingAuth, setSocket, syncEncryptionKey } = useAuthStore();
   const location = useLocation();
   const isProfilePage = location.pathname === '/profile';
   const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5005';
@@ -29,6 +29,8 @@ const App = () => {
       useAuthStore.setState({ onlineUsers: [] });
       return;
     }
+
+    syncEncryptionKey();
 
     const socket = io(socketUrl, {
       withCredentials: true,
@@ -51,7 +53,7 @@ const App = () => {
       socket.disconnect();
       setSocket(null);
     };
-  }, [authUser, setSocket, socketUrl]);
+  }, [authUser, setSocket, socketUrl, syncEncryptionKey]);
 
   const hideNavbarPaths = ['/login', '/signup'];
   const shouldHideNavbar = hideNavbarPaths.includes(location.pathname);

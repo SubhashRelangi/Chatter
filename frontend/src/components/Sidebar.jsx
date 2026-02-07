@@ -65,42 +65,50 @@ const Sidebar = () => {
             </div>
           ) : (
             <>
-              {filteredUsers.map((user) => (
-                <button
-                  key={user._id}
-                  onClick={() => {
-                    setSelectedUser(user);
-                    closeSidebar();
-                  }}
-                  className={`
-                    w-full p-3 flex items-center gap-3 transition-colors
-                    hover:bg-base-300 sm:justify-center md:justify-start
-                    ${selectedUser?._id === user._id ? "bg-base-300 ring-1 ring-base-300" : ""}
-                  `}
-                >
-                  <div className="relative avatar shrink-0">
-                    <div className="w-12 rounded-full">
-                      <img src={user.profilePic || "/profile.jpg"} alt={user.username} />
-                    </div>
-                    {onlineUsers.includes(user._id) && (
-                      <span className="absolute bottom-0 right-0 size-3 rounded-full bg-success ring-2 ring-base-content" />
-                    )}
-                  </div>
+              {filteredUsers.map((user) => {
+                const lastMessagePreview = user.lastMessage
+                  ? user.lastMessage.isEncrypted
+                    ? "Encrypted message"
+                    : user.lastMessage.text || "Image"
+                  : "No messages yet";
 
-                  <div className="min-w-0 w-full sm:hidden md:flex md:items-start md:justify-between">
-                    <div className="min-w-0 text-left">
-                      <div className="truncate font-medium">{user.username}</div>
-                      <div className="truncate text-sm text-base-content/70">
-                        {user.lastMessage ? user.lastMessage.text || "Image" : "No messages yet"}
+                return (
+                  <button
+                    key={user._id}
+                    onClick={() => {
+                      setSelectedUser(user);
+                      closeSidebar();
+                    }}
+                    className={`
+                      w-full p-3 flex items-center gap-3 transition-colors
+                      hover:bg-base-300 sm:justify-center md:justify-start
+                      ${selectedUser?._id === user._id ? "bg-base-300 ring-1 ring-base-300" : ""}
+                    `}
+                  >
+                    <div className="relative avatar shrink-0">
+                      <div className="w-12 rounded-full">
+                        <img src={user.profilePic || "/profile.jpg"} alt={user.username} />
+                      </div>
+                      {onlineUsers.includes(user._id) && (
+                        <span className="absolute bottom-0 right-0 size-3 rounded-full bg-success ring-2 ring-base-content" />
+                      )}
+                    </div>
+
+                    <div className="min-w-0 w-full sm:hidden md:flex md:items-start md:justify-between">
+                      <div className="min-w-0 text-left">
+                        <div className="truncate font-medium">{user.username}</div>
+                        <div className="truncate text-sm text-base-content/70">
+                          {lastMessagePreview}
+                        </div>
+                      </div>
+                      <div className="text-right text-xs text-base-content/50">
+                        <div>{onlineUsers.includes(user._id) ? "Online" : ""}</div>
+                        <div>{user.lastMessage ? formatRelativeTime(user.lastMessage.createdAt) : ""}</div>
                       </div>
                     </div>
-                    <div className="text-right text-xs text-base-content/50">
-                      <div>{onlineUsers.includes(user._id) ? "Online" : ""}</div>
-                      <div>{user.lastMessage ? formatRelativeTime(user.lastMessage.createdAt) : ""}</div>
-                    </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
 
               {filteredUsers.length === 0 && (
                 <div className="px-4 py-6 text-center text-sm text-base-content/50">

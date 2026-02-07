@@ -90,7 +90,7 @@ const ChatContainer = () => {
                   className="w-full max-w-[220px] rounded-md mb-2"
                 />
               )}
-              {message.text && <p>{message.text}</p>}
+              {(message.decryptedText || message.text) && <p>{message.decryptedText || message.text}</p>}
             </div>
           </div>
         ))}

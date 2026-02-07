@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import cloudinary from "../lib/cloudinary.js";
-import User from "../models/auth.model.js";
 import Message from "../models/message.model.js";
 
 const emitMessageToUser = (io, onlineUsers, userId, eventName, payload) => {
@@ -75,10 +74,12 @@ export const getUsersForSidebar = async (req, res) => {
 // 📤 Send a message (text or image)
 export const sendMessage = async (req, res) => {
     try {
-        const { text, image } = req.body;
+        const { text, image, isEncrypted = false, encryptionIv = "", senderPublicKey = "" } = req.body;
         const { id: receiverId } = req.params;
         const senderId = req.user._id;
         const trimmedText = typeof text === "string" ? text.trim() : "";
+        const normalizedIv = typeof encryptionIv === "string" ? encryptionIv.trim() : "";
+        const normalizedSenderPublicKey = typeof senderPublicKey === "string" ? senderPublicKey.trim() : "";
 
         if (!mongoose.Types.ObjectId.isValid(receiverId)) {
             return res.status(400).json({ message: "Invalid receiver ID" });
@@ -86,6 +87,14 @@ export const sendMessage = async (req, res) => {
 
         if (!trimmedText && !image) {
             return res.status(400).json({ message: "Message text or image is required" });
+        }
+
+        if (isEncrypted && trimmedText && !normalizedIv) {
+            return res.status(400).json({ message: "Encrypted messages require an IV" });
+        }
+
+        if (isEncrypted && trimmedText && !normalizedSenderPublicKey) {
+            return res.status(400).json({ message: "Encrypted messages require sender public key" });
         }
 
         let imageUrl;
@@ -98,7 +107,10 @@ export const sendMessage = async (req, res) => {
             senderId,
             receiverId,
             text: trimmedText,
-            image: imageUrl || ""
+            image: imageUrl || "",
+            isEncrypted: Boolean(isEncrypted),
+            encryptionIv: normalizedIv,
+            senderPublicKey: normalizedSenderPublicKey,
         });
 
         await newMessage.save();

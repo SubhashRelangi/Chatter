@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import axiosInstance from '../lib/axios.js';
 import toast from 'react-hot-toast';
+import { ensureUserKeyPair } from '../lib/e2ee.js';
 
 export const useAuthStore = create((set) => ({
   authUser: null,
@@ -12,6 +13,23 @@ export const useAuthStore = create((set) => ({
   socket: null,
 
   setSocket: (socketInstance) => set({ socket: socketInstance }),
+
+  syncEncryptionKey: async () => {
+    const authUser = useAuthStore.getState().authUser;
+    if (!authUser?._id) return;
+
+    try {
+      const { publicKey } = await ensureUserKeyPair(authUser._id);
+      if (authUser.encryptionPublicKey === publicKey) {
+        return;
+      }
+
+      const res = await axiosInstance.put("/auth/update-profile", { encryptionPublicKey: publicKey });
+      set({ authUser: res.data });
+    } catch (error) {
+      console.error("Failed to sync E2EE key:", error);
+    }
+  },
 
   checkAuth: async () => {
     try {

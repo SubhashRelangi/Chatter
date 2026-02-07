@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import cloudinary from "../lib/cloudinary.js";
 
 export const signup = async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, encryptionPublicKey } = req.body;
   try {
     if (!username || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
@@ -32,6 +32,7 @@ export const signup = async (req, res) => {
       username: normalizedUsername,
       email: normalizedEmail,
       password: hashedPassword,
+      encryptionPublicKey: typeof encryptionPublicKey === "string" ? encryptionPublicKey : "",
     });
 
     if (newUser) {
@@ -44,6 +45,7 @@ export const signup = async (req, res) => {
         username: newUser.username,
         email: newUser.email,
         profilePic: newUser.profilePic,
+        encryptionPublicKey: newUser.encryptionPublicKey,
       });
     } else {
       res.status(400).json({ message: "Invalid user data" });
@@ -89,6 +91,7 @@ export const login = async (req, res) => {
         username: user.username, // fallback if username is missing
         email: user.email,
         profilePic: user.profilePic,
+        encryptionPublicKey: user.encryptionPublicKey,
         createdAt: user.createdAt,
       },
     });
@@ -110,7 +113,7 @@ export const logout = (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { profilePic, username } = req.body;
+    const { profilePic, username, encryptionPublicKey } = req.body;
     const userId = req.user._id;
 
     const updates = {};
@@ -133,6 +136,10 @@ export const updateProfile = async (req, res) => {
       }
 
       updates.username = username;
+    }
+
+    if (typeof encryptionPublicKey === "string" && encryptionPublicKey.trim()) {
+      updates.encryptionPublicKey = encryptionPublicKey.trim();
     }
 
     if (Object.keys(updates).length === 0) {

@@ -19,6 +19,18 @@ const messageSchema = new mongoose.Schema({
     image:{
         type: String,
         default: "",
+    },
+    isEncrypted: {
+        type: Boolean,
+        default: false,
+    },
+    encryptionIv: {
+        type: String,
+        default: "",
+    },
+    senderPublicKey: {
+        type: String,
+        default: "",
     }
 },{
     timestamps: true
