@@ -1,69 +1,99 @@
 # Chatter
 
-A real-time chat application that allows users to communicate instantly in one-on-one conversations.
+Chatter is a full-stack one-to-one chat web app built with React, Express, MongoDB, and Socket.IO.
 
-## Features
+## Core Functionality
 
-- **Real-time Messaging:** Instant messaging between users.
-- **User Authentication:** Secure user authentication with signup, login, and logout functionality using JWT.
-- **Profile Customization:** Users can update their profile pictures.
-- **User Discovery:** A sidebar lists all registered users, making it easy to start a conversation.
-- **Private Conversations:** All conversations are private between two users.
-- **Responsive UI:** The application is designed to be responsive and work on various screen sizes.
-comm
+- User signup, login, auth check, and logout using JWT in HTTP-only cookies
+- Private one-to-one chat between registered users
+- Text and image message support (images uploaded via Cloudinary)
+- Sidebar user discovery with latest message preview
+- Online user presence updates in real time
+- Profile management (username and profile photo updates)
+- Responsive UI for desktop and mobile
+
 ## Tech Stack
 
-### Frontend
+Frontend:
+- React (Vite)
+- Zustand (state management)
+- Tailwind CSS + DaisyUI
+- Axios
+- React Router
+- Socket.IO Client
 
-- **Framework:** React.js with Vite
-- **State Management:** Zustand
-- **Styling:** Tailwind CSS
-- **HTTP Client:** Axios
-- **Notifications:** React Hot Toast
-- **Icons:** Lucide React
+Backend:
+- Node.js + Express
+- MongoDB + Mongoose
+- JWT + cookie-parser
+- bcrypt
+- Socket.IO
+- Cloudinary
 
-### Backend
+## Project Structure
 
-- **Framework:** Node.js with Express.js
-- **Database:** MongoDB with Mongoose
-- **Authentication:** JSON Web Tokens (JWT)
-- **Password Hashing:** bcrypt
-- **Image Storage:** Cloudinary
-
-## Getting Started
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v14 or higher)
-- [npm](https://www.npmjs.com/)
-- [MongoDB](https://www.mongodb.com/)
-- [Git](https://git-scm.com/)
-
-### Installation
-
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/SubhashRelangi/chat-app.git
-    cd chat-app
-    ```
-
-2.  **Backend Setup:**
-    ```bash
-    cd backend
-    npm install
-    ```
-
-3.  **Frontend Setup:**
-    ```bash
-    cd ../frontend
-    npm install
-    ```
-
-### Environment Variables
-
-The backend requires the following environment variables. Create a `.env` file in the `backend` directory and add the following:
-
+```text
+Chatter/
+├── backend/
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── middleware/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── lib/
+│   │   └── server.js
+│   └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── store/
+│   │   └── lib/
+│   └── package.json
+└── package.json
 ```
+
+## Prerequisites
+
+- Node.js 18+ recommended
+- npm
+- MongoDB
+- Cloudinary account
+
+## Installation
+
+1. Clone the repository.
+
+```bash
+git clone https://github.com/SubhashRelangi/chat-app.git
+cd chat-app
+```
+
+2. Install root dependencies (for running frontend + backend together).
+
+```bash
+npm install
+```
+
+3. Install backend dependencies.
+
+```bash
+cd backend
+npm install
+```
+
+4. Install frontend dependencies.
+
+```bash
+cd ../frontend
+npm install
+```
+
+## Environment Variables
+
+Create `backend/.env` with:
+
+```env
 PORT=5005
 MONGODB_URL=<your_mongodb_connection_string>
 JWT_SECRET=<your_jwt_secret>
@@ -72,45 +102,71 @@ CLOUDINARY_API_KEY=<your_cloudinary_api_key>
 CLOUDINARY_API_SECRET=<your_cloudinary_api_secret>
 ```
 
-### Running the Application
+## Running the App
 
-1.  **Start the backend server:**
-    ```bash
-    cd backend
-    npm start
-    ```
+Option 1: Run both servers from root.
 
-2.  **Start the frontend development server:**
-    ```bash
-    cd ../frontend
-    npm run dev
-    ```
+```bash
+npm run dev
+```
 
-The application will be available at `http://localhost:5173`.
+Option 2: Run separately.
+
+Backend:
+
+```bash
+cd backend
+npm run dev
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm run dev
+```
+
+Default URLs:
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:5005`
 
 ## API Endpoints
 
-### Auth
+Auth:
+- `POST /auth/signup`
+- `POST /auth/login`
+- `POST /auth/logout`
+- `GET /auth/check`
+- `PUT /auth/update-profile`
 
-- `POST /auth/signup`: Register a new user.
-- `POST /auth/login`: Login a user.
-- `POST /auth/logout`: Logout a user.
-- `GET /auth/check`: Check if a user is authenticated.
-- `PUT /auth/update-profile`: Update user's profile picture.
+Messages:
+- `GET /messages/users`
+- `GET /messages/:id`
+- `POST /messages/send/:id`
 
-### Messages
+## Scripts
 
-- `GET /messages/:id`: Get messages with a specific user.
-- `POST /messages/:id`: Send a message to a specific user.
-- `GET /messages/users`: Get all users for the sidebar.
+Root:
+- `npm run dev` starts frontend and backend together
 
-## Usage
+Backend:
+- `npm run start` starts backend with Node
+- `npm run dev` starts backend with nodemon
 
-1.  Register for a new account or log in with an existing one.
-2.  Click on a user from the sidebar to start a conversation.
-3.  Start sending and receiving messages in real-time.
-4.  Go to the profile page to update your profile picture.
+Frontend:
+- `npm run dev` starts Vite dev server
+- `npm run build` builds production assets
+- `npm run preview` previews production build
+- `npm run lint` runs ESLint
+
+## Usage Flow
+
+1. Create an account or log in.
+2. Select a user from the sidebar.
+3. Send text or image messages.
+4. See online presence in the contact list.
+5. Update profile image/username from the profile page.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to open an issue or submit a pull request.
+Issues and pull requests are welcome.
