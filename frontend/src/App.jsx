@@ -58,13 +58,13 @@ const App = () => {
 
   if (isCheckingAuth && !authUser) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex min-h-screen h-dvh items-center justify-center">
         <Loader className="size-10 animate-spin" />
       </div>
     );
   }
   return (
-    <div data-theme='cupcake' className='h-screen flex flex-col'>
+    <div data-theme='cupcake' className='min-h-screen h-dvh flex flex-col'>
       <Toaster
         position="top-right"
         toastOptions={{
@@ -83,7 +83,7 @@ const App = () => {
 
       {!shouldHideNavbar && <Navbar />}
 
-      <div className={`flex-1 flex ${isProfilePage ? 'overflow-y-auto' : 'overflow-hidden'}`}>
+      <div className={`min-h-0 flex-1 flex ${isProfilePage ? 'overflow-y-auto' : 'overflow-hidden'}`}>
         <Routes>
           <Route path="/" element={authUser ? <HomePage /> : <Navigate to="/login" />} />
           <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />

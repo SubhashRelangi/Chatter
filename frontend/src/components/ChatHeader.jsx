@@ -31,9 +31,9 @@ const ChatHeader = () => {
   const isOnline = onlineUsers.includes(selectedUser._id);
 
   return (
-    <div className="p-2.5 border-b border-base-300">
+    <div className="border-b border-base-300 px-3 py-2.5 sm:px-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           {/* Avatar */}
           <div className="avatar">
             <div className="size-10 rounded-full relative">
@@ -42,16 +42,16 @@ const ChatHeader = () => {
           </div>
 
           {/* User info */}
-          <div>
-            <h3 className="font-medium">{selectedUser.username}</h3>
-            <p className="text-sm text-base-content/70">
+          <div className="min-w-0">
+            <h3 className="font-medium truncate">{selectedUser.username}</h3>
+            <p className="text-sm text-base-content/70 truncate">
               {isOnline ? "Online" : formatLastSeen(selectedUser.updatedAt)}
             </p>
           </div>
         </div>
 
         {/* Close button */}
-        <button onClick={() => setSelectedUser(null)}>
+        <button onClick={() => setSelectedUser(null)} className="btn btn-ghost btn-circle btn-sm" aria-label="Back to contacts">
           <X />
         </button>
       </div>

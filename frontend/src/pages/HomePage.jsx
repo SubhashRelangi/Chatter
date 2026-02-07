@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
+import React from 'react';
 import NoSelectedUser from '../components/NoChatSeleted';
 import Sidebar from '../components/Sidebar';
 import ChatContainer from '../components/ChatContainer';
 import { useChatStore } from '../store/useChatStore';
 
 const HomePage = () => {
-  const {selectedUser} = useChatStore();
+  const { selectedUser } = useChatStore();
 
   return (
-    <div className="flex w-full bg-base-100 text-base-content">
+    <div className="relative flex h-full w-full overflow-hidden bg-base-100 text-base-content">
 
       <Sidebar />
 
-      <div className="flex-1 flex">
+      <div className={`min-w-0 flex-1 ${selectedUser ? 'flex' : 'hidden sm:flex'}`}>
         {selectedUser ? (
             <ChatContainer />
         ) : (
