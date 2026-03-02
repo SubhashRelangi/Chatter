@@ -5,8 +5,10 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.route.js'; 
 import messageRoutes from './routes/message.route.js';
-import http from 'http'; // Import http module
-import { Server } from 'socket.io'; // Import Server from socket.io
+import http from 'http';
+import { Server } from 'socket.io';
+import jwt from "jsonwebtoken";
+import User from "./models/auth.model.js";
 
 // Load environment variables
 dotenv.config();
@@ -14,14 +16,15 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5005;
 const MONGO_URI = process.env.MONGODB_URL;
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 // Create HTTP server
-const httpServer = http.createServer(app); // Create http server from express app
+const httpServer = http.createServer(app);
 
 // Initialize Socket.IO
 const io = new Server(httpServer, {
     cors: {
-        origin: 'http://localhost:5173', // Allow frontend origin
+        origin: CLIENT_URL,
         methods: ["GET", "POST"],
         credentials: true
     }
@@ -30,7 +33,7 @@ const io = new Server(httpServer, {
 // Middleware
 app.use(express.json({ limit: "5mb" }));
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: CLIENT_URL,
     credentials: true
 }));
 app.use(cookieParser());
@@ -40,43 +43,74 @@ app.get("/", (req, res) => {
     res.send("Server is up and running!");
 });
 
-// routes
-app.use('/auth', authRoutes);
-app.use('/messages', messageRoutes);
+const onlineUsers = new Map();
+app.set("io", io);
+app.set("onlineUsers", onlineUsers);
 
-// Socket.IO connection handling
-const onlineUsers = new Map(); // Map to store online users: userId -> socketId
+const parseTokenFromCookie = (cookieHeader = "") => {
+    const token = cookieHeader
+        .split(";")
+        .map((cookie) => cookie.trim())
+        .find((cookie) => cookie.startsWith("jwt="))
+        ?.slice(4);
 
-io.on('connection', (socket) => {
-    console.log('A user connected:', socket.id);
+    return token ? decodeURIComponent(token) : null;
+};
 
-    const userId = socket.handshake.query.userId;
-    if (userId) {
-        onlineUsers.set(userId, socket.id);
-    }
+const emitOnlineUsers = () => {
+    io.emit("getOnlineUsers", Array.from(onlineUsers.keys()));
+};
 
-    // Emit online users to all connected clients
-    io.emit('getOnlineUsers', Array.from(onlineUsers.keys()));
-
-    socket.on('disconnect', () => {
-        console.log('User disconnected:', socket.id);
-        // Remove disconnected user from onlineUsers map
-        for (let [key, value] of onlineUsers.entries()) {
-            if (value === socket.id) {
-                onlineUsers.delete(key);
-                break;
-            }
+io.use(async (socket, next) => {
+    try {
+        const token = parseTokenFromCookie(socket.handshake.headers.cookie);
+        if (!token) {
+            return next(new Error("Unauthorized"));
         }
-        // Emit updated online users to all connected clients
-        io.emit('getOnlineUsers', Array.from(onlineUsers.keys()));
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decoded?.userId) {
+            return next(new Error("Unauthorized"));
+        }
+
+        const userExists = await User.exists({ _id: decoded.userId });
+        if (!userExists) {
+            return next(new Error("Unauthorized"));
+        }
+
+        socket.userId = decoded.userId.toString();
+        next();
+    } catch (error) {
+        next(new Error("Unauthorized"));
+    }
+});
+
+io.on("connection", (socket) => {
+    const userId = socket.userId;
+    if (!onlineUsers.has(userId)) {
+        onlineUsers.set(userId, new Set());
+    }
+    onlineUsers.get(userId).add(socket.id);
+    emitOnlineUsers();
+
+    socket.on("disconnect", () => {
+        const userSocketSet = onlineUsers.get(userId);
+        if (!userSocketSet) {
+            return;
+        }
+
+        userSocketSet.delete(socket.id);
+        if (userSocketSet.size === 0) {
+            onlineUsers.delete(userId);
+        }
+
+        emitOnlineUsers();
     });
 });
 
-// Pass io instance to message routes (if needed for broadcasting from controllers)
-app.use((req, res, next) => {
-    req.io = io;
-    next();
-});
+// routes
+app.use('/auth', authRoutes);
+app.use('/messages', messageRoutes);
 
 
 // Connect to MongoDB
@@ -88,7 +122,6 @@ mongoose.connect(MONGO_URI)
     console.error("MongoDB connection error:", err);
 });
 
-// Listen with httpServer instead of app
 httpServer.listen(PORT, () => {
     console.log(`App and Socket.IO server are running at http://localhost:${PORT}`);
 });

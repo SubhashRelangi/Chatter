@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../store/useAuthStore.js';
 
@@ -93,9 +94,9 @@ const SignupPage = () => {
         </form>
         <p className="mt-6 text-center text-sm">
           Already have an account?{' '}
-          <a href="/login" className="text-primary underline hover:text-primary-focus transition">
+          <Link to="/login" className="text-primary underline hover:text-primary-focus transition">
             Login
-          </a>
+          </Link>
         </p>
       </div>
     </div>

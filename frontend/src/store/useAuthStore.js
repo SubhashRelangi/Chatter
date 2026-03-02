@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import axiosInstance from '../lib/axios.js';
 import toast from 'react-hot-toast';
+import { ensureUserKeyPair } from '../lib/e2ee.js';
 
 export const useAuthStore = create((set) => ({
   authUser: null,
@@ -12,6 +13,23 @@ export const useAuthStore = create((set) => ({
   socket: null,
 
   setSocket: (socketInstance) => set({ socket: socketInstance }),
+
+  syncEncryptionKey: async () => {
+    const authUser = useAuthStore.getState().authUser;
+    if (!authUser?._id) return;
+
+    try {
+      const { publicKey } = await ensureUserKeyPair(authUser._id);
+      if (authUser.encryptionPublicKey === publicKey) {
+        return;
+      }
+
+      const res = await axiosInstance.put("/auth/update-profile", { encryptionPublicKey: publicKey });
+      set({ authUser: res.data });
+    } catch (error) {
+      console.error("Failed to sync E2EE key:", error);
+    }
+  },
 
   checkAuth: async () => {
     try {
@@ -36,20 +54,17 @@ export const useAuthStore = create((set) => ({
     try {
       const res = await axiosInstance.post('/auth/signup', userData);
       if (res.status === 201) {
-        setTimeout(() => {
-          set({ authUser: res.data.user });
-          toast.success('Signup completed!', { id: toastId });
-        }, 2000);
-      } else {
-        toast.error('Signup failed', { id: toastId });
+        set({ authUser: res.data });
+        toast.success('Signup completed!', { id: toastId });
+        return;
       }
+
+      toast.error('Signup failed', { id: toastId });
     } catch (error) {
-      toast.error('Server error', { id: toastId });
+      toast.error(error.response?.data?.message || 'Server error', { id: toastId });
       console.error('Signup error:', error);
     } finally {
-      setTimeout(() => {
-        set({ isSigningUp: false });
-      }, 2000);
+      set({ isSigningUp: false });
     }
   },
 
@@ -96,10 +111,8 @@ export const useAuthStore = create((set) => ({
       return;
     }
 
-    setTimeout(() => {
-      set({ authUser: null });
-      toast.success('Logout completed!', { id: toastId });
-    }, 2000);
+    set({ authUser: null, onlineUsers: [] });
+    toast.success('Logout completed!', { id: toastId });
   },
 
   resetAuthState: () =>

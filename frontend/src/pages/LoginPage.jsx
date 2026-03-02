@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore.js';
 
 const LoginPage = () => {
@@ -65,12 +66,12 @@ const LoginPage = () => {
 
         <p className="mt-6 text-center text-sm">
           Don't have an account?{' '}
-          <a
-            href="/signup"
+          <Link
+            to="/signup"
             className="text-primary underline hover:text-primary-focus transition"
           >
             Sign Up
-          </a>
+          </Link>
         </p>
       </div>
     </div>

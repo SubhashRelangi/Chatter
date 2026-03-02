@@ -4,17 +4,24 @@ import bcrypt from "bcrypt";
 import cloudinary from "../lib/cloudinary.js";
 
 export const signup = async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, encryptionPublicKey } = req.body;
   try {
     if (!username || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedUsername = username.trim();
+
+    if (!normalizedUsername) {
+      return res.status(400).json({ message: "Username is required" });
     }
 
     if (password.length < 6) {
       return res.status(400).json({ message: "Password must be at least 6 characters" });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (user) return res.status(400).json({ message: "Email already exists" });
 
@@ -22,9 +29,10 @@ export const signup = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const newUser = new User({
-      username,
-      email,
+      username: normalizedUsername,
+      email: normalizedEmail,
       password: hashedPassword,
+      encryptionPublicKey: typeof encryptionPublicKey === "string" ? encryptionPublicKey : "",
     });
 
     if (newUser) {
@@ -37,6 +45,7 @@ export const signup = async (req, res) => {
         username: newUser.username,
         email: newUser.email,
         profilePic: newUser.profilePic,
+        encryptionPublicKey: newUser.encryptionPublicKey,
       });
     } else {
       res.status(400).json({ message: "Invalid user data" });
@@ -82,6 +91,7 @@ export const login = async (req, res) => {
         username: user.username, // fallback if username is missing
         email: user.email,
         profilePic: user.profilePic,
+        encryptionPublicKey: user.encryptionPublicKey,
         createdAt: user.createdAt,
       },
     });
@@ -103,7 +113,7 @@ export const logout = (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { profilePic, username } = req.body;
+    const { profilePic, username, encryptionPublicKey } = req.body;
     const userId = req.user._id;
 
     const updates = {};
@@ -128,11 +138,19 @@ export const updateProfile = async (req, res) => {
       updates.username = username;
     }
 
+    if (typeof encryptionPublicKey === "string" && encryptionPublicKey.trim()) {
+      updates.encryptionPublicKey = encryptionPublicKey.trim();
+    }
+
     if (Object.keys(updates).length === 0) {
       return res.status(400).json({ message: "No valid fields to update" });
     }
 
-    const updatedUser = await User.findByIdAndUpdate(userId, updates, { new: true });
+    const updatedUser = await User.findByIdAndUpdate(userId, updates, { new: true }).select("-password");
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     res.status(200).json(updatedUser);
   } catch (error) {
     console.error("Error in update profile:", error);

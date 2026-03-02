@@ -82,8 +82,8 @@ export const ProfilePage = () => {
           {/* Avatar Upload */}
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
-              <img
-                src={selectedImg || authUser.profilePic || "/profile.png"}
+                <img
+                src={selectedImg || authUser.profilePic || "/profile.jpg"}
                 alt="Profile"
                 className="size-32 rounded-full object-cover border-4 border-primary"
               />

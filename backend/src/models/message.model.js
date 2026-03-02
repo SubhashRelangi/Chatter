@@ -13,10 +13,24 @@ const messageSchema = new mongoose.Schema({
     },
     text:{
         type: String,
-        required: true
+        trim: true,
+        default: ""
     },
     image:{
         type: String,
+        default: "",
+    },
+    isEncrypted: {
+        type: Boolean,
+        default: false,
+    },
+    encryptionIv: {
+        type: String,
+        default: "",
+    },
+    senderPublicKey: {
+        type: String,
+        default: "",
     }
 },{
     timestamps: true

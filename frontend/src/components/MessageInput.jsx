@@ -48,14 +48,14 @@ const MessageInput = () => {
   };
 
   return (
-    <div className="p-4 w-full">
+    <div className="w-full border-t border-base-300 bg-base-100 p-3 sm:p-4">
       {imagePreview && (
         <div className="mb-3 flex items-center gap-2">
           <div className="relative">
             <img
               src={imagePreview}
               alt="Preview"
-              className="w-20 h-20 object-cover rounded-lg border border-base-300"
+              className="h-16 w-16 rounded-lg border border-base-300 object-cover sm:h-20 sm:w-20"
             />
             <button
               onClick={removeImage}
@@ -70,10 +70,10 @@ const MessageInput = () => {
       )}
 
       <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-        <div className="flex-1 flex gap-2">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           <input
             type="text"
-            className="w-full input input-bordered rounded-lg input-sm sm:input-md"
+            className="input input-bordered input-sm sm:input-md w-full rounded-lg"
             placeholder="Type a message..."
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -88,17 +88,18 @@ const MessageInput = () => {
 
           <button
             type="button"
-            className={`hidden sm:flex btn btn-circle
-                     ${imagePreview ? "text-success" : "text-base-content/70"}`}
+            className={`btn btn-circle btn-sm sm:btn-md ${imagePreview ? "text-success" : "text-base-content/70"}`}
             onClick={() => fileInputRef.current?.click()}
+            aria-label="Attach image"
           >
             <Image size={20} />
           </button>
         </div>
         <button
           type="submit"
-          className="btn btn-sm btn-circle"
+          className="btn btn-circle btn-sm sm:btn-md"
           disabled={!text.trim() && !imagePreview}
+          aria-label="Send message"
         >
           <Send size={22} />
         </button>
