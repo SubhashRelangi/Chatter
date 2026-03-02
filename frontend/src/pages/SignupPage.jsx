@@ -51,8 +51,8 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-base-200 flex items-center justify-center px-4">
-      <div className="bg-base-100 shadow-xl rounded-2xl p-10 w-full max-w-md">
+    <div className="min-h-screen bg-base-200 flex items-center justify-center w-full">
+      <div className="bg-base-100 shadow-xl rounded-2xl p-10 w-full sm:max-w-lg md:max-w-xl lg:max-w-2xl sm:px-6 md:px-8">
         <h2 className="text-4xl font-extrabold text-center mb-8 tracking-wide">Create Account</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           {['username', 'email', 'password', 'confirmPassword'].map((field) => (
