@@ -58,6 +58,8 @@ const App = () => {
   const hideNavbarPaths = ['/login', '/signup'];
   const shouldHideNavbar = hideNavbarPaths.includes(location.pathname);
 
+  const isAuthPage = hideNavbarPaths.includes(location.pathname);
+
   if (isCheckingAuth && !authUser) {
     return (
       <div className="flex min-h-screen h-dvh items-center justify-center">
