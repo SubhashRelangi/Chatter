@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import cloudinary from "../lib/cloudinary.js";
 import Message from "../models/message.model.js";
+import User from "../models/auth.model.js";
 
 const emitMessageToUser = (io, onlineUsers, userId, eventName, payload) => {
     const socketIds = onlineUsers?.get(userId?.toString());
